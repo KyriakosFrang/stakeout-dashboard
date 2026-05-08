@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink, Outlet } from 'react-router-dom';
 import clsx from 'clsx';
 import { LiveIndicator } from './LiveIndicator';
 import { useSSEContext } from '../context/SSEContext';
@@ -37,7 +37,6 @@ function ThemeToggle() {
 
 export function Layout() {
   const { connected, activeRuns } = useSSEContext();
-  const location = useLocation();
 
   return (
     <div className="min-h-screen flex flex-col bg-zinc-50 dark:bg-zinc-950">
@@ -65,7 +64,7 @@ export function Layout() {
                   className={({ isActive }) =>
                     clsx(
                       'px-3 py-1.5 rounded-lg text-sm font-medium transition-colors',
-                      isActive || (!exact && location.pathname.startsWith(to) && to !== '/')
+                      isActive
                         ? 'bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100'
                         : 'text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 hover:bg-zinc-100/70 dark:hover:bg-zinc-800/50'
                     )

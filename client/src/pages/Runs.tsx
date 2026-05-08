@@ -5,7 +5,7 @@ import type { Run, RunFilters, RunStatus } from '../types';
 import { useQuery } from '../hooks/useQuery';
 import { useSSEContext } from '../context/SSEContext';
 import { StatusBadge } from '../components/StatusBadge';
-import { formatCost, formatDuration, formatDate, runDurationMs, truncateId } from '../utils/format';
+import { formatCost, formatDuration, formatDate, formatTokens, runDurationMs, truncateId } from '../utils/format';
 
 const DEFAULT_FILTERS: RunFilters = {
   page: 1,
@@ -68,7 +68,7 @@ export function Runs() {
     { key: '_id', label: 'Run ID', sortable: false },
     { key: 'started_at', label: 'Started', sortable: true },
     { key: 'duration', label: 'Duration', sortable: false },
-    { key: 'total_input_tokens', label: 'Tokens', sortable: true },
+    { key: 'total_input_tokens', label: 'In / Out', sortable: true },
     { key: 'estimated_cost_usd', label: 'Cost', sortable: true },
   ];
 
@@ -182,9 +182,11 @@ export function Runs() {
                     <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400 whitespace-nowrap">{formatDate(run.started_at)}</td>
                     <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400 tabular-nums">{formatDuration(runDurationMs(run))}</td>
                     <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400 tabular-nums">
-                      {run.total_input_tokens != null
-                        ? `${run.total_input_tokens.toLocaleString()} / ${(run.total_output_tokens ?? 0).toLocaleString()}`
-                        : '—'}
+                      {run.total_input_tokens != null ? (
+                        <span title={`${run.total_input_tokens.toLocaleString()} in / ${(run.total_output_tokens ?? 0).toLocaleString()} out`}>
+                          {formatTokens(run.total_input_tokens)} / {formatTokens(run.total_output_tokens)}
+                        </span>
+                      ) : '—'}
                     </td>
                     <td className="px-4 py-3 tabular-nums font-medium">
                       {run.estimated_cost_usd != null ? (

@@ -3,7 +3,8 @@ export function formatCost(eur: number | undefined | null): string {
   if (eur === 0) return '€0.00';
   if (eur < 0.001) return `€${eur.toFixed(6)}`;
   if (eur < 0.01) return `€${eur.toFixed(4)}`;
-  return `€${eur.toFixed(4)}`;
+  if (eur < 1) return `€${eur.toFixed(3)}`;
+  return `€${eur.toFixed(2)}`;
 }
 
 export function formatDuration(ms: number | undefined | null): string {

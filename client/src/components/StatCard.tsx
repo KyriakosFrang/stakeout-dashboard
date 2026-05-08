@@ -18,13 +18,13 @@ const accentMap = {
 
 export function StatCard({ label, value, sub, accent = 'default', icon }: Props) {
   return (
-    <div className="card p-5 flex flex-col gap-2">
+    <div className="card p-4 flex flex-col gap-1.5">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">{label}</span>
         {icon && <span className="text-zinc-400 dark:text-zinc-600">{icon}</span>}
       </div>
-      <div className={clsx('text-3xl font-bold tabular-nums', accentMap[accent])}>{value}</div>
-      {sub && <div className="text-xs text-zinc-500">{sub}</div>}
+      <div className={clsx('text-2xl font-bold tabular-nums leading-tight', accentMap[accent])}>{value}</div>
+      {sub && <div className="text-xs text-zinc-400 dark:text-zinc-500">{sub}</div>}
     </div>
   );
 }

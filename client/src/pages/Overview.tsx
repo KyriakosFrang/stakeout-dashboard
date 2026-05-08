@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   AreaChart,
@@ -31,7 +31,14 @@ function RunRow({ run }: { run: Run }) {
           <span className="font-medium text-zinc-800 dark:text-zinc-200 text-sm truncate">{run.graph_id}</span>
           <span className="font-mono text-xs text-zinc-400 dark:text-zinc-600">{truncateId(run._id)}</span>
         </div>
-        <div className="text-xs text-zinc-500 mt-0.5">{timeAgo(run.started_at)}</div>
+        <div className="flex items-center gap-2 mt-0.5">
+          <span className="text-xs text-zinc-500">{timeAgo(run.started_at)}</span>
+          {run.thread_id && (
+            <span className="text-xs text-zinc-400 dark:text-zinc-600 font-mono truncate max-w-[100px]" title={run.thread_id}>
+              {truncateId(run.thread_id, 10)}
+            </span>
+          )}
+        </div>
       </div>
       <div className="text-right text-xs text-zinc-500 tabular-nums space-y-0.5 hidden sm:block">
         <div>{formatDuration(duration)}</div>
@@ -95,7 +102,7 @@ export function Overview() {
     return unsub;
   }, [subscribe, refetch]);
 
-  const chartData = useCallback(() => {
+  const chartData = useMemo(() => {
     if (!stats?.daily_cost) return [];
     return stats.daily_cost.map((d) => ({ date: d.date.slice(5), cost: d.cost, count: d.count }));
   }, [stats]);
@@ -170,9 +177,9 @@ export function Overview() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Cost (7 days)</h2>
           </div>
-          {chartData().length > 0 ? (
-            <ResponsiveContainer width="100%" height={180}>
-              <AreaChart data={chartData()} margin={{ top: 0, right: 0, bottom: 0, left: -20 }}>
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={200}>
+              <AreaChart data={chartData} margin={{ top: 0, right: 0, bottom: 0, left: -20 }}>
                 <defs>
                   <linearGradient id="costGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
@@ -187,7 +194,7 @@ export function Overview() {
               </AreaChart>
             </ResponsiveContainer>
           ) : (
-            <div className="h-[180px] flex items-center justify-center text-zinc-400 dark:text-zinc-600 text-sm">
+            <div className="h-[200px] flex items-center justify-center text-zinc-400 dark:text-zinc-600 text-sm">
               No cost data yet
             </div>
           )}

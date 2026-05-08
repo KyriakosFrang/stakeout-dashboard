@@ -23,6 +23,8 @@ const EVENT_COLORS: Record<string, { dot: string; bg: string; border: string }> 
   node_end: { dot: 'bg-indigo-500', bg: 'bg-indigo-50 dark:bg-indigo-950/30', border: 'border-indigo-200 dark:border-indigo-800/40' },
   tool_call: { dot: 'bg-amber-500', bg: 'bg-amber-50 dark:bg-amber-950/30', border: 'border-amber-200 dark:border-amber-800/40' },
   tool_result: { dot: 'bg-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-950/30', border: 'border-emerald-200 dark:border-emerald-800/40' },
+  retriever_start: { dot: 'bg-sky-500 dark:bg-sky-400', bg: 'bg-sky-50 dark:bg-sky-950/30', border: 'border-sky-200 dark:border-sky-800/40' },
+  retriever_end: { dot: 'bg-cyan-500 dark:bg-cyan-400', bg: 'bg-cyan-50 dark:bg-cyan-950/30', border: 'border-cyan-200 dark:border-cyan-800/40' },
   error: { dot: 'bg-red-500', bg: 'bg-red-50 dark:bg-red-950/30', border: 'border-red-200 dark:border-red-800/40' },
 };
 
@@ -31,6 +33,8 @@ const EVENT_LABELS: Record<string, string> = {
   node_end: 'Node End',
   tool_call: 'Tool Call',
   tool_result: 'Tool Result',
+  retriever_start: 'Retriever',
+  retriever_end: 'Retrieved',
   error: 'Error',
 };
 
@@ -107,7 +111,10 @@ function EventRow({ event }: { event: RunEvent }) {
         )}
         {event.input_tokens != null && (
           <span className="text-xs text-zinc-400 tabular-nums">
-            {formatTokens(event.input_tokens)}↑ {formatTokens(event.output_tokens)}↓
+            {formatTokens(event.input_tokens)} in · {formatTokens(event.output_tokens)} out
+            {event.cache_read_tokens != null && event.cache_read_tokens > 0 && (
+              <span className="text-sky-500 dark:text-sky-400 ml-1">· {formatTokens(event.cache_read_tokens)} cached</span>
+            )}
           </span>
         )}
         <span className="text-xs text-zinc-400">{new Date(event.timestamp).toLocaleTimeString()}</span>

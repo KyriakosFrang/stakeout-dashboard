@@ -5,6 +5,8 @@ export type EventType =
   | 'node_end'
   | 'tool_call'
   | 'tool_result'
+  | 'retriever_start'
+  | 'retriever_end'
   | 'error';
 
 export interface Message {
@@ -22,6 +24,8 @@ export interface Run {
   error: string | null;
   total_input_tokens?: number;
   total_output_tokens?: number;
+  total_cache_read_tokens?: number;
+  total_cache_creation_tokens?: number;
   estimated_cost_usd?: number;
   metadata?: Record<string, unknown>;
 }
@@ -38,6 +42,8 @@ export interface RunEvent {
   messages?: Message[];
   input_tokens?: number;
   output_tokens?: number;
+  cache_read_tokens?: number;
+  cache_creation_tokens?: number;
   model?: string;
   llm_input?: Message[];
   llm_output?: string;

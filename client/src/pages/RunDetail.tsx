@@ -6,7 +6,7 @@ import type { Run, RunEvent } from '../types';
 import { useQuery } from '../hooks/useQuery';
 import { useSSEContext } from '../context/SSEContext';
 import { StatusBadge } from '../components/StatusBadge';
-import { formatCost, formatDuration, formatDate, runDurationMs, truncateId } from '../utils/format';
+import { formatCost, formatDuration, formatDate, formatTokens, runDurationMs, truncateId } from '../utils/format';
 
 // ─── Timeline ────────────────────────────────────────────────────────────────
 
@@ -31,6 +31,16 @@ const EVENT_COLORS: Record<string, { bg: string; border: string; dot: string }> 
     border: 'border-emerald-200 dark:border-emerald-800/40',
     dot: 'bg-emerald-500 dark:bg-emerald-400',
   },
+  retriever_start: {
+    bg: 'bg-sky-50 dark:bg-sky-950/30',
+    border: 'border-sky-200 dark:border-sky-800/40',
+    dot: 'bg-sky-500 dark:bg-sky-400',
+  },
+  retriever_end: {
+    bg: 'bg-cyan-50 dark:bg-cyan-950/30',
+    border: 'border-cyan-200 dark:border-cyan-800/40',
+    dot: 'bg-cyan-500 dark:bg-cyan-400',
+  },
   error: {
     bg: 'bg-red-50 dark:bg-red-950/30',
     border: 'border-red-200 dark:border-red-800/40',
@@ -43,6 +53,8 @@ const EVENT_LABELS: Record<string, string> = {
   node_end: 'Node End',
   tool_call: 'Tool Call',
   tool_result: 'Tool Result',
+  retriever_start: 'Retriever',
+  retriever_end: 'Retrieved',
   error: 'Error',
 };
 
@@ -104,10 +116,14 @@ function TimelineEvent({ event, maxLatency, onClick, selected }: {
         {event.latency_ms != null && <LatencyBar ms={event.latency_ms} maxMs={maxLatency} />}
 
         {(event.input_tokens != null || event.output_tokens != null) && (
-          <div className="flex items-center gap-3 mt-2 text-xs text-zinc-500">
-            <span>{event.input_tokens?.toLocaleString()} in</span>
-            <span>·</span>
-            <span>{event.output_tokens?.toLocaleString()} out</span>
+          <div className="flex items-center gap-3 mt-2 text-xs text-zinc-500 flex-wrap">
+            <span>{formatTokens(event.input_tokens)} in · {formatTokens(event.output_tokens)} out</span>
+            {event.cache_read_tokens != null && (
+              <span className="text-sky-600 dark:text-sky-400">{formatTokens(event.cache_read_tokens)} cached</span>
+            )}
+            {event.cache_creation_tokens != null && event.cache_creation_tokens > 0 && (
+              <span className="text-violet-600 dark:text-violet-400">{formatTokens(event.cache_creation_tokens)} written</span>
+            )}
           </div>
         )}
 
@@ -324,9 +340,15 @@ export function RunDetail() {
             {run.total_input_tokens != null && (
               <div className="text-center">
                 <div className="text-xs text-zinc-500 mb-1">Tokens</div>
-                <div className="text-sm text-zinc-700 dark:text-zinc-300 tabular-nums">
-                  {run.total_input_tokens.toLocaleString()} / {(run.total_output_tokens ?? 0).toLocaleString()}
+                <div className="text-sm text-zinc-700 dark:text-zinc-300 tabular-nums"
+                     title={`${run.total_input_tokens.toLocaleString()} in / ${(run.total_output_tokens ?? 0).toLocaleString()} out`}>
+                  {formatTokens(run.total_input_tokens)} / {formatTokens(run.total_output_tokens)}
                 </div>
+                {(run.total_cache_read_tokens != null && run.total_cache_read_tokens > 0) && (
+                  <div className="text-xs text-sky-600 dark:text-sky-400 tabular-nums mt-0.5">
+                    {formatTokens(run.total_cache_read_tokens)} cached
+                  </div>
+                )}
               </div>
             )}
             {run.estimated_cost_usd != null && (
@@ -398,14 +420,20 @@ export function RunDetail() {
                 <div className="space-y-2 text-xs">
                   {[
                     ['Node', selectedEvent.node_name],
-                    ['Type', selectedEvent.event_type],
+                    ['Type', EVENT_LABELS[selectedEvent.event_type] ?? selectedEvent.event_type],
                     ['Time', formatDate(selectedEvent.timestamp)],
                     ['Latency', selectedEvent.latency_ms != null ? formatDuration(selectedEvent.latency_ms) : null],
                     ['Model', selectedEvent.model],
-                    ['Input tokens', selectedEvent.input_tokens?.toLocaleString()],
-                    ['Output tokens', selectedEvent.output_tokens?.toLocaleString()],
+                    ['Input', selectedEvent.input_tokens != null ? formatTokens(selectedEvent.input_tokens) : null],
+                    ['Output', selectedEvent.output_tokens != null ? formatTokens(selectedEvent.output_tokens) : null],
+                    ['Cached', selectedEvent.cache_read_tokens != null && selectedEvent.cache_read_tokens > 0
+                      ? formatTokens(selectedEvent.cache_read_tokens) : null],
+                    ['Cache write', selectedEvent.cache_creation_tokens != null && selectedEvent.cache_creation_tokens > 0
+                      ? formatTokens(selectedEvent.cache_creation_tokens) : null],
+                    ['Docs', selectedEvent.payload?.document_count != null
+                      ? String(selectedEvent.payload.document_count) : null],
                   ].filter(([, v]) => v != null).map(([k, v]) => (
-                    <div key={k} className="flex justify-between gap-4">
+                    <div key={k as string} className="flex justify-between gap-4">
                       <span className="text-zinc-500">{k}</span>
                       <span className="text-zinc-700 dark:text-zinc-300 font-mono text-right">{v}</span>
                     </div>
