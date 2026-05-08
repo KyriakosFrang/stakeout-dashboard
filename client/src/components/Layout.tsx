@@ -7,6 +7,7 @@ import { useTheme } from '../context/ThemeContext';
 const navItems = [
   { to: '/', label: 'Overview', exact: true },
   { to: '/runs', label: 'Runs' },
+  { to: '/threads', label: 'Threads' },
   { to: '/cost', label: 'Cost' },
 ];
 

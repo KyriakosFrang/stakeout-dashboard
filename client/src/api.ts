@@ -1,4 +1,4 @@
-import type { Run, RunEvent, RunsResponse, Stats, CostStats, RunFilters } from './types';
+import type { Run, RunEvent, RunsResponse, Stats, CostStats, RunFilters, Thread, RunWithEvents } from './types';
 
 const BASE = '/api';
 
@@ -27,4 +27,8 @@ export const api = {
   graphs: (): Promise<string[]> => get('/graphs'),
 
   costStats: (period: string): Promise<CostStats> => get(`/stats/cost?period=${period}`),
+
+  threads: (): Promise<Thread[]> => get('/threads'),
+
+  threadRuns: (threadId: string): Promise<RunWithEvents[]> => get(`/threads/${encodeURIComponent(threadId)}/runs`),
 };

@@ -6,6 +6,7 @@ import { addClient, startPoller, stopPoller } from './sse';
 import runsRouter from './routes/runs';
 import statsRouter from './routes/stats';
 import graphsRouter from './routes/graphs';
+import threadsRouter from './routes/threads';
 
 const PORT = parseInt(process.env.PORT || '3001', 10);
 
@@ -27,6 +28,7 @@ app.get('/api/stream', (req, res) => {
 app.use('/api/runs', runsRouter);
 app.use('/api/stats', statsRouter);
 app.use('/api/graphs', graphsRouter);
+app.use('/api/threads', threadsRouter);
 
 async function main() {
   await getDb(); // warm up connection

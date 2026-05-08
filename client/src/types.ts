@@ -82,6 +82,22 @@ export interface CostStats {
   top_runs: Run[];
 }
 
+export interface Thread {
+  _id: string; // thread_id
+  run_count: number;
+  first_run: string;
+  last_run: string;
+  total_cost: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  statuses: RunStatus[];
+  graph_ids: string[];
+}
+
+export interface RunWithEvents extends Run {
+  events: RunEvent[];
+}
+
 export interface RunFilters {
   graph_id?: string;
   status?: RunStatus | '';

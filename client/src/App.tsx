@@ -6,6 +6,8 @@ import { Overview } from './pages/Overview';
 import { Runs } from './pages/Runs';
 import { RunDetail } from './pages/RunDetail';
 import { Cost } from './pages/Cost';
+import { Threads } from './pages/Threads';
+import { ThreadDetail } from './pages/ThreadDetail';
 
 export default function App() {
   return (
@@ -18,6 +20,8 @@ export default function App() {
               <Route path="runs" element={<Runs />} />
               <Route path="runs/:id" element={<RunDetail />} />
               <Route path="cost" element={<Cost />} />
+              <Route path="threads" element={<Threads />} />
+              <Route path="threads/:threadId" element={<ThreadDetail />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>
