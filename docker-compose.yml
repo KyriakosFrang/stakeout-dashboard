@@ -1,0 +1,36 @@
+services:
+  dashboard:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: production
+      STAKEOUT_BACKEND: mongo
+      MONGO_URI: mongodb://mongo:27017
+      MONGO_DB: stakeout
+      # Uncomment to enable Basic auth:
+      # STAKEOUT_DASHBOARD_USER: admin
+      # STAKEOUT_DASHBOARD_PASSWORD: changeme
+      # Uncomment to enable Bearer token auth instead:
+      # STAKEOUT_DASHBOARD_TOKEN: your-secret-token
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+volumes:
+  mongo_data:

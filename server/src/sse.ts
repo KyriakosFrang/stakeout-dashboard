@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { getDb } from './db';
+import { getAdapter } from './adapters';
 
 interface SSEClient {
   id: string;
@@ -8,7 +8,7 @@ interface SSEClient {
 
 const clients = new Map<string, SSEClient>();
 let pollInterval: NodeJS.Timeout | null = null;
-let lastPollTime = new Date(Date.now() - 10_000).toISOString();
+let lastPollTime = new Date(Date.now() - 10_000);
 
 export function addClient(id: string, res: Response): void {
   res.setHeader('Content-Type', 'text/event-stream');
@@ -17,7 +17,6 @@ export function addClient(id: string, res: Response): void {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.flushHeaders();
 
-  // Send a heartbeat immediately
   res.write('event: connected\ndata: {}\n\n');
 
   clients.set(id, { id, res });
@@ -45,22 +44,10 @@ export async function startPoller(): Promise<void> {
     if (clients.size === 0) return;
 
     try {
-      const db = await getDb();
       const since = lastPollTime;
-      const now = new Date().toISOString();
+      const now = new Date();
 
-      // Find runs that started or were updated since last poll
-      const updatedRuns = await db
-        .collection('runs')
-        .find({
-          $or: [
-            { started_at: { $gte: since } },
-            { ended_at: { $gte: since } },
-          ],
-        })
-        .sort({ started_at: -1 })
-        .limit(20)
-        .toArray();
+      const updatedRuns = await getAdapter().getRecentlyUpdatedRuns(since, 20);
 
       if (updatedRuns.length > 0) {
         broadcast('runs_updated', updatedRuns);
